@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>黑马旅游网-我的收藏</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .tab-content .row > div {
+            margin-top: 16px;
+        }
+
+        .tab-content {
+            margin-bottom: 36px;
+        }
+    </style>
+    <script src="js/jquery-3.3.1.js"></script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+<!-- 排行榜 start-->
+<section id="content">
+    <section class="hemai_jx">
+        <div class="jx_top">
+            <div class="jx_tit">
+                <img src="images/icon_5.jpg" alt="">
+                <span>我的收藏</span>
+            </div>
+        </div>
+        <div class="jx_content">
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="home">
+                    <div class="row" id="route">
+                        <!--<div class="col-md-3">
+                            <a href="route_detail.html">
+                                <img src="images/collection_pic.jpg" alt="">
+                                <div class="has_border">
+                                    <h3>上海直飞三亚5天4晚自由行(春节预售+亲子/蜜月/休闲游首选+豪华酒店任选+接送机)</h3>
+                                    <div class="price">网付价<em>￥</em><strong>889</strong><em>起</em></div>
+                                </div>
+                            </a>
+                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page_num_inf">
+            <i></i> 共
+            <span id="totalpage">12</span>页<span id="totalCount">132</span>条
+        </div>
+        <div class="pageNum">
+            <ul id="pageNum">
+                <li><a href="">首页</a></li>
+                <li class="threeword"><a href="#">上一页</a></li>
+                <li><a href="#">1</a></li>
+                <li class="threeword"><a href="javascript:;">下一页</a></li>
+                <li class="threeword"><a href="javascript:;">末页</a></li>
+            </ul>
+        </div>
+    </section>
+</section>
+<!-- 排行榜 end-->
+
+<!--引入尾部-->
+<div id="footer"></div>
+<!--导入布局js，共享header和footer-->
+<script type="text/javascript" src="js/include.js"></script>
+<script src="js/getParameter.js"></script>
+<script>
+    $(function () {
+        load(1);
+    })
+
+    function load(currentPage) {
+        $.get("user/findOne", {}, function (user) {
+            if (user != null) {
+                $.get("route/favoritePageQuery", {currentPage: currentPage}, function (pb) {
+                    $("#totalpage").text(pb.totalPage);
+                    $("#totalCount").text(pb.totalCount);
+                    var listr = "";
+                    var up = currentPage - 1;
+                    var beforePage = "";
+                    var fristPage = "";
+                    if (up <= 0) {
+                        beforePage = '<li class="threeword"><a href="javascript:void(0)">上一页</a></li>';
+                        // fristPage = '<li><a href="javascript:void(0)">首页</a></li>';
+                    } else {
+                        beforePage = '<li onclick="javascript:load(' + up + ')" class="threeword"><a href="javascript:void(0)">上一页</a></li>';
+                        fristPage = '<li onclick="javascript:load(' + 1 + ')"><a href="javascript:void(0)">首页</a></li>';
+                    }
+                    listr += fristPage;
+                    listr += beforePage;
+                    var begin;
+                    var end;
+                    if (pb.totalPage < 10) {
+                        begin = 1;
+                        end = pb.totalPage;
+                    } else {
+                        begin = currentPage - 5;
+                        end = currentPage + 4;
+                        if (begin < 1) {
+                            begin = 1;
+                            end = begin + 9;
+                        }
+                        if (end > pb.totalPage) {
+                            end = pb.totalPage;
+                            begin = end - 9;
+                        }
+                    }
+                    var li = "";
+                    for (var i = begin; i <= end; i++) {
+                        if (currentPage == i) {
+                            li = '<li class="curPage" onclick="load(' + i + ')"><a href="javascript:void(0)">' + i + '</a></li>';
+                        } else {
+                            li = '<li onclick="load(' + i + ')"><a href="javascript:void(0)">' + i + '</a></li>';
+                        }
+                        listr += li;
+                    }
+                    var down = currentPage + 1;
+                    var lastPage = "";
+                    var nextPage = "";
+                    if (down > pb.totalPage) {
+                        nextPage = '<li class="threeword"><a href="javascript:void(0)">下一页</a></li>';
+                        // lastPage = '<li class="threeword"><a href="javascript:void(0)">末页</a></li>';
+                    } else {
+                        nextPage = '<li onclick="javascript:load(' + down + ')" class="threeword"><a href="javascript:void(0)">下一页</a></li>';
+                        lastPage = '<li onclick="javascript:load(' + pb.totalPage + ')" class="threeword"><a href="javascript:void(0)">末页</a></li>';
+                    }
+                    listr += nextPage;
+                    listr += lastPage;
+                    $("#pageNum").html(listr);
+
+                    //展示收藏的商品
+                    var divstr = "";
+                    for (var i = 0; i < pb.list.length; i++) {
+                        var route = pb.list[i];
+                        var div = '<div class="col-md-3">\n' +
+                            '<a href="route_detail.html?rid='+ route.rid +'">\n' +
+                            '<img src="'+ route.rimage +'" alt="">\n' +
+                            '<div class="has_border">\n' +
+                            '<h3>'+ route.rname +'</h3>\n' +
+                            '<div class="price">网付价<em>￥</em><strong>'+ route.price +'</strong><em>起</em></div>\n' +
+                            '</div>\n' +
+                            '</a>\n' +
+                            '</div>';
+                        divstr += div;
+                    }
+                    $("#route").html(divstr);
+                })
+            } else {
+                alert("还没有登录，请先登录！")
+                location.href = "login.html";
+            }
+        })
+    }
+</script>
+</body>
+</html>
